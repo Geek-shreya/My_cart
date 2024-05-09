@@ -2,7 +2,14 @@
 
 {% block title%} {{product.product_name}} - my_cart {% endblock %}
 
-{%block css %} {% endblock %}
+{%block css %} 
+
+    .desc{
+        margin-left: 80px;
+        margin-top: 50px;
+    }
+
+{% endblock %}
 
 {%block body %} 
 
@@ -10,7 +17,7 @@
       <div class="row"> 
         <div class="col-md-4">
             <div class="row">
-                <img src="/media/{{product.image}}" height="450px" width="100px">
+                <img src="/media/{{product.image}}" height="350px" width="80px">
             </div>
 
             <div class="col-md-8">
@@ -18,7 +25,7 @@
                 <button class="btn btn-primary">Add To Cart</button>
             </div>
         </div>
-        <div class="col-md-8">
+        <div class="col desc">
             <h5>{{product.product_name}}</h5>
             <p><b>Rs.{{product.price}}</b></p>
             <p>{{product.description}}</p>
