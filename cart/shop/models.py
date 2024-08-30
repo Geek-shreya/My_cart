@@ -34,6 +34,10 @@ class Orders(models.Model):
     state = models.CharField(max_length=111)
     zip_code = models.CharField(max_length=111)
     phone = models.CharField(max_length=111, default="")
+    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_payment_signature = models.CharField(max_length=100, blank=True, null=True)
+    paid = models.BooleanField(default=False)
 
 
 class OrderUpdate(models.Model):
@@ -43,6 +47,7 @@ class OrderUpdate(models.Model):
     timestamp = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return self.update_desc[0:7] + "..."
+        # return self.update_desc[0:7] + "..."
+        return self.order_id
         
     

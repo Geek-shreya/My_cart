@@ -3,6 +3,9 @@ from django.http import HttpResponse
 from .models import Product,Contact,Orders,OrderUpdate 
 from math import ceil
 import json
+import razorpay
+from django.conf import settings
+from django.http import HttpResponseBadRequest
 
 def index(request):
     allProds = []
@@ -59,23 +62,48 @@ def productView(request,myid):
 
     return render(request, 'shop/productView.html', {'product': product[0]})
 
+
 def checkout(request):
     if request.method == "POST":
         items_json = request.POST.get('itemsJson', '')
         name = request.POST.get('name', '')
+        amount = request.POST.get('amount', '')
         email = request.POST.get('email', '')
-        address = request.POST.get('address1', '') + " " + request.POST.get('address2','')
+        address = request.POST.get('address1', '') + " " + request.POST.get('address2', '')
         city = request.POST.get('city', '')
         state = request.POST.get('state', '')
         zip_code = request.POST.get('zip_code', '')
         phone = request.POST.get('phone', '')
-        order = Orders(items_json=items_json ,name=name, email=email, phone=phone, address=address,city=city, state=state, zip_code=zip_code)
+
+        # Calculate the total amount from items_json
+        total_amount = 0
+        items = json.loads(items_json)
+        for item in items:
+            total_amount += items[item][0] * items[item][2]  # qty * price
+        
+        order = Orders(items_json=items_json, name=name, email=email, address=address, city=city,
+                       state=state, zip_code=zip_code, phone=phone, amount=total_amount)
         order.save()
-        update = OrderUpdate(order_id = order.order_id, update_desc = "The Order has been placed")
+        update = OrderUpdate(order_id=order.order_id, update_desc="The order has been placed")
         update.save()
+
         thank = True
         id = order.order_id
-        return render(request, 'shop/checkout.html', {'thank': thank , 'id':id})
-    return render(request, 'shop/checkout.html')
-   
 
+        # Create Razorpay order
+        client = razorpay.Client(auth=(settings.KEY, settings.SECRET_KEY))
+        payment = client.order.create({'amount': total_amount * 100, 'currency': 'INR', 'payment_capture': 1})
+        order.razorpay_order_id = payment['id']
+        order.save()
+
+        return render(request, 'shop/checkout.html', {'thank': thank, 'id': id, 'payment': payment})
+
+    return render(request, 'shop/checkout.html')
+
+        
+def success(request):
+    order_id = request.GET.get('order_id')
+    cart = Orders.objects.get(razorpay_order_id = order_id)
+    cart.paid = True
+    cart.save()
+    return HttpResponse("Payment Success")
