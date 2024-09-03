@@ -70,74 +70,50 @@
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-
-if (localStorage.getItem('cart') == null) {
-    var cart = {};
-} else {
-    cart = JSON.parse(localStorage.getItem('cart'));
-
-}
-console.log(cart);
-var sum = 0;
-var totalPrice = 0;
-{% comment %} 
-if ($.isEmptyObject(cart)) {
-    //if object is empty
-    mystr = `<p>Your cart is empty, please add some items to your cart before checking out!</p>`
-    $('#items').append(mystr);
-} else {
-    for (item in cart) {
-        let name = cart[item][1];
-        let qty = cart[item][0];
-        let itemPrice = cart[item][2];
-        sum = sum + qty;
-        totalPrice = totalPrice + qty* itemPrice;
-        mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
-                    ${name}
-                    <span class="badge badge-primary badge-pill">${qty}</span>
-                </li>`
-        $('#items').append(mystr);
+    if (localStorage.getItem('cart') == null) {
+        var cart = {};
+    } else {
+        cart = JSON.parse(localStorage.getItem('cart'));
     }
-
-} {% endcomment %}
-if (!$.isEmptyObject(cart)) {
-    for (item in cart) {
-        let qty = cart[item][0];
-        let itemPrice = cart[item][2];
-        totalPrice = totalPrice + qty * itemPrice;
+    
+    console.log(cart);
+    var totalPrice = 0;
+    if (!$.isEmptyObject(cart)) {
+        for (item in cart) {
+            let qty = cart[item][0];
+            let itemPrice = cart[item][2];
+            totalPrice = totalPrice + qty * itemPrice;
+        }
     }
-}
-
-var amountInPaise = totalPrice * 100; 
-
-document.getElementById('cart').innerHTML = sum;
-document.getElementById('totalPrice').innerHTML = totalPrice;
-$('#itemsJson').val(JSON.stringify(cart));  //set values 
-{% if thank %}
-alert('Thanks for ordering with us. Your order is is {{id}}. Use it to track your order using our order tracker');
-localStorage.clear();
-document.location = "/shop";   //after ordering redirect to home
-{% endif %} 
-$('#amount').val($('#totalPrice ').html())
-
-var options = {
-    "key": "rzp_test_reeOmGu6iSaqXe", // Enter the Key ID generated from the Dashboard
-    "amount": amountInPaise.toString(), // Dynamic amount in paise
-    "currency": "INR",
-    "name": "my_cart",
-    "description": "Transaction",
-    "image": "https://example.com/your_logo",
-    "order_id": "{{payment.id}}", // This is a sample Order ID. Pass the `id` obtained in the response of Step 1
-    "handler": function (response){
-        window.location.href = `http://127.0.0.1:8000/shop/success/?razorpay_payment_id=${response.razorpay_payment_id}&razorpay_order_id=${response.razorpay_order_id}&razorpay_signature=${response.razorpay_signature}`;
-    },
-    "theme": {
-        "color": "#3399cc"
-    }
-};
-
-var rzp1 = new Razorpay(options);
-rzp1.on('payment.failed', function (response){
+    
+    var amountInPaise = totalPrice * 100; 
+    document.getElementById('totalPrice').innerHTML = totalPrice;
+    $('#itemsJson').val(JSON.stringify(cart));  
+    
+    {% if thank %}
+    alert('Thanks for ordering with us. Your order is {{id}}. Use it to track your order using our order tracker');
+    localStorage.clear();
+    document.getElementById('rzp-button1').style.display = "block";
+    {% endif %} 
+    
+    var options = {
+        "key": "rzp_test_reeOmGu6iSaqXe", // Enter the Key ID generated from the Dashboard
+        "amount": amountInPaise.toString(), // Dynamic amount in paise
+        "currency": "INR",
+        "name": "my_cart",
+        "description": "Transaction",
+        "image": "https://example.com/your_logo",
+        "order_id": "{{payment.id}}", // This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+        "handler": function (response){
+            window.location.href = `http://127.0.0.1:8000/shop/success/?razorpay_payment_id=${response.razorpay_payment_id}&razorpay_order_id=${response.razorpay_order_id}&razorpay_signature=${response.razorpay_signature}`;
+        },
+        "theme": {
+            "color": "#3399cc"
+        }
+    };
+    
+    var rzp1 = new Razorpay(options);
+    rzp1.on('payment.failed', function (response){
         alert(response.error.code);
         alert(response.error.description);
         alert(response.error.source);
@@ -145,11 +121,12 @@ rzp1.on('payment.failed', function (response){
         alert(response.error.reason);
         alert(response.error.metadata.order_id);
         alert(response.error.metadata.payment_id);
-});
-document.getElementById('rzp-button1').onclick = function(e){
-    rzp1.open();
-    e.preventDefault();
-}
-</script>
+    });
+    
+    document.getElementById('rzp-button1').onclick = function(e){
+        rzp1.open();
+        e.preventDefault();
+    }
+    </script>
 
 {% endblock %}
