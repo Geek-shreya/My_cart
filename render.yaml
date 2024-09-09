@@ -1,0 +1,1 @@
+services:  - type: web    name: my-django-app    env: python    buildCommand: pip install -r requirements.txt    startCommand: waitress-serve --host=0.0.0.0 --port=8000 cart.wsgi:application    instances: 1    plan: starter
