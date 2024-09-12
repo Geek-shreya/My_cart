@@ -26,8 +26,10 @@ SECRET_KEY = 'django-insecure-+zrkoqbx7!4cb!32r^n8)(qc!4&d&g$=ms11iw=njsa5nit4mc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['my-cart.onrender.com', 'localhost']
-
+ALLOWED_HOSTS = ['localhost']
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(ENDER_EXTERNAL_HOSTNAME)
 
 # Application definition
 
